@@ -42,7 +42,7 @@ export default function Today() {
   const [later, setLater] = useState(false);
 
   return (
-    <Screen nav>
+    <Screen nav bar="Oggi">
       <header className="pt-6 pb-4">
         <p className="eyebrow">{weekdayName(d).replace(/^./, (c) => c.toUpperCase())} {d.getDate()} {monthName(d.getMonth())}</p>
         <h1 className="text-h1 font-extrabold mt-1">{greeting()}{s.name ? `, ${s.name}` : ''}</h1>
@@ -109,7 +109,7 @@ export default function Today() {
               <p className="text-body mt-2 font-semibold">
                 {goal.done >= goal.target ? 'Fatto! Bravissimo.' : wk.goal === 'giorni' ? `Finora ${activeDaysThisWeek(s)} ${activeDaysThisWeek(s) === 1 ? 'giorno' : 'giorni'}: ottimo inizio.` : 'Hai tempo fino a domenica.'}
               </p>
-              <button type="button" className="mt-3 min-h-touch text-body font-bold text-sky-dark underline underline-offset-4" onClick={() => navigate('/obiettivo')}>
+              <button type="button" className="mt-3 min-h-touch text-body font-bold text-sky-text underline underline-offset-4" onClick={() => navigate('/obiettivo')}>
                 Cambia obiettivo
               </button>
             </>

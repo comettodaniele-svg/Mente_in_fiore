@@ -83,7 +83,7 @@ export default function ComePrima({ level, onDone }: ExerciseProps) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <span className="text-meta font-bold text-ink-soft">Immagine {Math.max(0, idx + 1)} di {seq.length}</span>
-        <span className="pill bg-sky-tint text-sky-dark">{passi(n)} indietro</span>
+        <span className="pill bg-sky-tint text-sky-text">{passi(n)} indietro</span>
       </div>
       <Prompt>
         {idx < n ? `Ricorda le immagini: tra poco confronta con quella di ${passi(n)} prima` : `È uguale a quella di ${passi(n)} prima?`}

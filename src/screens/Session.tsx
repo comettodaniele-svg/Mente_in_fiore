@@ -22,12 +22,16 @@ export default function Session() {
     return chosen.length ? chosen : todayPlan(getState());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Modalità sviluppatore: prova senza toccare i progressi (se non si è scelto di salvarli).
+  const [test] = useState(() => /[?&]prova=1/.test(route));
+  const saving = !test || s.devSave;
   const [i, setI] = useState(0);
   const [phase, setPhase] = useState<Phase>('intro');
   const [outcome, setOutcome] = useState<ExerciseOutcome | null>(null);
   const [completed, setCompleted] = useState<ExerciseId[]>([]);
   const [paused, setPaused] = useState(false);
   const [run, setRun] = useState(0);
+  const [levels, setLevels] = useState<{ played: number; next: number } | null>(null);
 
   const id = plan[i];
   const def = exById(id);
@@ -42,7 +46,10 @@ export default function Session() {
   }, [phase, i]);
 
   function finishSession(done: ExerciseId[]) {
-    if (done.length > 0) {
+    if (test) {
+      if (saving && done.length > 0) actions.recordSession(done);
+      navigate('/sviluppatore', { replace: true });
+    } else if (done.length > 0) {
       actions.recordSession(done);
       navigate('/fine', { replace: true });
     } else {
@@ -52,7 +59,9 @@ export default function Session() {
 
   function onDone(o: ExerciseOutcome) {
     const next = def.adapt(level, o);
-    actions.recordResult(id, level, o, next);
+    if (saving) actions.recordResult(id, level, o, next);
+    if (test) actions.logDev({ ex: id, at: new Date().toISOString(), level, next, phrase: def.phrase(o), correct: o.correct, total: o.total });
+    setLevels({ played: level, next });
     setOutcome(o);
     setCompleted((c) => [...c, id]);
     setPhase('result');
@@ -66,6 +75,7 @@ export default function Session() {
     }
     setI(i + 1);
     setOutcome(null);
+    setLevels(null);
     setPhase('intro');
   }
 
@@ -74,7 +84,7 @@ export default function Session() {
   return (
     <Screen>
       <header className="flex items-center gap-3 pt-4 pb-3 min-h-[4.5rem]">
-        <p className="flex-1 text-body font-extrabold">Esercizio {i + 1} di {plan.length}</p>
+        <p className="flex-1 text-body font-extrabold">{test ? `Prova · livello ${levels?.played ?? level}` : `Esercizio ${i + 1} di ${plan.length}`}</p>
         <button type="button" className="btn-outline !min-h-[3rem] !px-4" onClick={() => { stopSpeaking(); setPaused(true); }}>
           <Pause size={20} aria-hidden /> Pausa
         </button>
@@ -116,10 +126,16 @@ export default function Session() {
             <p className="eyebrow">{def.name}</p>
             <h1 className="text-h1 font-extrabold">{outcome.correct >= outcome.total * 0.6 ? 'Ben fatto!' : 'Grazie per l\'impegno!'}</h1>
             <p className="text-lead font-semibold">{def.phrase(outcome)}.</p>
-            {def.adapt(level, outcome) > level && <Notice>La prossima volta sarà un pochino più impegnativo.</Notice>}
-            {def.adapt(level, outcome) < level && <Notice tone="sky">La prossima volta sarà più tranquillo.</Notice>}
+            {levels && levels.next > levels.played && <Notice>La prossima volta sarà un pochino più impegnativo.</Notice>}
+            {levels && levels.next < levels.played && <Notice tone="sky">La prossima volta sarà più tranquillo.</Notice>}
+            {test && levels && (
+              <Notice tone="sky">
+                Prova sviluppatore: livello {levels.played} → {levels.next} di {def.maxLevel}. Corrette {outcome.correct} su {outcome.total}.
+                {saving ? ' Risultato salvato.' : ' Risultato non salvato.'}
+              </Notice>
+            )}
             <button type="button" className="btn-primary w-full text-lead !min-h-[4rem] mt-2" onClick={nextExercise}>
-              {i + 1 >= plan.length ? 'Guarda la tua pianta' : 'Prossimo esercizio'}
+              {i + 1 >= plan.length ? (test ? 'Torna agli esercizi' : 'Guarda la tua pianta') : 'Prossimo esercizio'}
             </button>
           </div>
         )

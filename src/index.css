@@ -15,7 +15,7 @@ body {
 
 /* Contrasto più forte */
 html.contrast .text-ink-soft { color: #111827 !important; }
-html.contrast .border-line { border-color: #6B7280 !important; }
+html.contrast .border-line, html.contrast .border-moss { border-color: #6B7280 !important; }
 html.contrast body { background: #FFFFFF; }
 
 /* Riduci le animazioni (scelta dell'utente o impostazione del telefono) */
@@ -30,38 +30,51 @@ html.calm *, html.calm *::before, html.calm *::after {
 :focus-visible { outline: 3px solid #2B70C9; outline-offset: 3px; border-radius: 0.75rem; }
 
 @layer components {
+  /* Pulsanti "tattili" di Stitch: bordo inferiore spesso che si abbassa alla pressione. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 min-h-touch px-5 rounded-btn font-bold text-body select-none;
+    @apply inline-flex items-center justify-center gap-2 min-h-touch px-5 rounded-btn font-extrabold text-lead select-none tracking-wide;
     transition: transform 80ms ease, box-shadow 80ms ease;
     -webkit-tap-highlight-color: transparent;
   }
-  .btn:active:not(:disabled) { transform: translateY(3px); }
+  .btn:active:not(:disabled) { transform: translateY(4px); }
   .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
-  .btn-primary { @apply btn bg-leaf text-white; box-shadow: 0 4px 0 0 #1F5100; }
-  .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 0 #1F5100; }
+  .btn-primary { @apply btn bg-leaf text-white; box-shadow: 0 5px 0 0 #357C01; }
+  .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 0 #357C01; }
 
-  .btn-sun { @apply btn bg-sun text-ink; box-shadow: 0 4px 0 0 #D99B00; }
+  .btn-sun { @apply btn bg-sun text-ink; box-shadow: 0 5px 0 0 #D99B00; }
   .btn-sun:active:not(:disabled) { box-shadow: 0 1px 0 0 #D99B00; }
 
-  .btn-outline { @apply btn bg-white text-ink border-2 border-line; box-shadow: 0 4px 0 0 #CBD5E1; }
-  .btn-outline:active:not(:disabled) { box-shadow: 0 1px 0 0 #CBD5E1; }
+  .btn-outline { @apply btn bg-white text-ink border-2 border-line; box-shadow: 0 4px 0 0 #E5E7EB; }
+  .btn-outline:active:not(:disabled) { box-shadow: 0 1px 0 0 #E5E7EB; }
 
-  .card { @apply bg-white rounded-card border-2 border-line p-5; }
+  .btn-reply { @apply btn !px-2 !text-body bg-slate-100 text-ink border-2 border-slate-200; box-shadow: 0 3px 0 0 #CBD5E1; }
+  .btn-reply:active:not(:disabled) { box-shadow: 0 1px 0 0 #CBD5E1; }
+  .btn-reply[aria-pressed='true'] { @apply bg-leaf text-white border-leaf-dark; box-shadow: 0 3px 0 0 #2A6900; }
+
+  /* Schede: bordo verde chiaro e "ripiano" inferiore, senza ombre sfocate. */
+  .card { @apply bg-white rounded-card border-2 border-moss p-5; box-shadow: 0 6px 0 0 #E2EBD9; }
 
   .choice {
-    @apply w-full text-left bg-white border-2 border-line rounded-[1.25rem] px-4 py-3 min-h-touch flex items-center gap-3 text-body font-semibold;
+    @apply w-full text-left bg-white border-2 border-line rounded-[1.25rem] px-4 py-3 min-h-touch flex items-center gap-3 text-body font-bold;
     box-shadow: 0 4px 0 0 #E5E7EB;
     transition: transform 80ms ease, box-shadow 80ms ease;
   }
   .choice:active { transform: translateY(3px); box-shadow: 0 1px 0 0 #E5E7EB; }
   .choice[aria-pressed='true'], .choice[aria-checked='true'] {
     @apply bg-leaf-tint border-leaf;
-    box-shadow: 0 4px 0 0 #378500;
+    box-shadow: 0 4px 0 0 #46A302;
   }
 
+  /* Nodo rotondo del sentiero (stile Duolingo/Stitch). */
+  .node {
+    @apply rounded-full border-[3px] border-white flex items-center justify-center text-white;
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+  .node:active { transform: translateY(4px); }
+
   .eyebrow { @apply text-meta font-bold text-ink-soft; }
-  .pill { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-meta font-bold; }
+  .pill { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-meta font-extrabold whitespace-nowrap; }
 }
 
 @keyframes grow-in {

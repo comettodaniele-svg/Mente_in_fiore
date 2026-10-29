@@ -16,6 +16,7 @@ import Progress from './screens/Progress';
 import Me from './screens/Me';
 import WelcomeBack from './screens/WelcomeBack';
 import Invite from './screens/Invite';
+import Dev from './screens/Dev';
 
 function RedoQuestionnaire() {
   return (
@@ -68,6 +69,7 @@ export default function App() {
     case '/bentornato': return <WelcomeBack />;
     case '/invita': return <Invite />;
     case '/questionario': return <RedoQuestionnaire />;
+    case '/sviluppatore': return <Dev />;
     default: return <Today />;
   }
 }

@@ -1,19 +1,30 @@
-// Il giardino condiviso: l'albero comune, le aiuole di ognuno, i messaggi e la sfida fuori dall'app.
+// Il giardino condiviso, sul modello della schermata di Stitch:
+// la mappa con l'albero comune e i nodi delle attività di oggi, le aiuole di ognuno,
+// la scheda dell'attività scelta, l'obiettivo della settimana, i messaggi e la sfida fuori dall'app.
 import { useEffect, useRef, useState } from 'react';
-import { UserPlus, Footprints, ChevronRight } from 'lucide-react';
+import { UserPlus, Footprints, Check, Play, Sprout, Leaf, MessagesSquare, Clock, Flower2, Sun as SunIcon } from 'lucide-react';
 import { actions, demoMembers, getState, makeCode, useApp } from '../store';
-import { Avatar, Card, Notice, Screen, Steps } from '../components/ui';
+import { Avatar, Notice, Screen, Steps, TONES, toneFor } from '../components/ui';
 import { navigate, useRoute } from '../router';
 import { GardenScene, type PlotInfo } from '../art/Scenes';
+import { Plant } from '../art/Plant';
+import { GARDEN_ILLUSTRATION } from '../art/illustration';
 import { STAGES, personalStage, plantName } from '../data/plants';
-import { groupFeed, groupSessionsThisWeek, memberTotalSessions, myPlant, treeStage } from '../lib/derive';
+import { groupFeed, groupSessionsThisWeek, memberTotalSessions, myPlant, sessionsOn, treeStage } from '../lib/derive';
 import { dayKey, relativeDay, seasonLabel, seasonOf, weekKey } from '../lib/dates';
 import { QUICK_REPLIES, challengeForWeek } from '../data/challenges';
+import { MAX_SESSIONS_PER_DAY, todayPlan } from '../lib/plan';
+import { exById } from '../exercises';
+import { EX_LOOK } from '../exercises/icons';
+import type { ExerciseId } from '../exercises/types';
+
+type Sel = { kind: 'ex'; id: ExerciseId } | { kind: 'plot'; name: string; me: boolean } | null;
 
 export default function Garden() {
   const s = useApp();
   const route = useRoute();
   const repliesRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
   const season = seasonOf();
   const group = s.group?.mode === 'gruppo' ? s.group : null;
   const mine = myPlant(s);
@@ -25,22 +36,38 @@ export default function Garden() {
   const today = dayKey();
   const repliedToday = s.replies.filter((r) => r.day === today).map((r) => r.text);
   const [justSent, setJustSent] = useState<string | null>(null);
+  const [sel, setSel] = useState<Sel>(null);
+
+  const rest = sessionsOn(s, today) >= MAX_SESSIONS_PER_DAY;
+  const plan = todayPlan(s);
+  const doneToday = new Set(s.results.filter((r) => r.day === today).map((r) => r.ex));
+  const nextEx = plan.find((id) => !doneToday.has(id)) ?? plan[0];
 
   useEffect(() => {
     if (route.includes('saluto=1')) repliesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [route]);
 
-  const plots: PlotInfo[] = [
-    ...(s.plant ? [{ name: s.name || 'Tu', species: s.plant, stage: mine.stage, blooms: mine.blooms, me: true }] : []),
-    ...(group?.members ?? []).map((m) => {
+  const members = group?.members ?? [];
+  const plots: (PlotInfo & { tone: number })[] = [
+    ...members.map((m, i) => {
       const st = personalStage(memberTotalSessions(m, since));
-      return { name: m.name, species: m.plant, stage: st.stage, blooms: st.blooms };
+      return { name: m.name, species: m.plant, stage: st.stage, blooms: st.blooms, tone: i };
     }),
   ];
+  const meplot = s.plant ? { name: s.name || 'Tu', species: s.plant, stage: mine.stage, blooms: mine.blooms, me: true, tone: 0 } : null;
+  // L'utente sta al centro della fila di aiuole.
+  const row = [...plots];
+  if (meplot) row.splice(Math.floor(row.length / 2), 0, meplot);
 
   const sceneLabel = group
-    ? `Il giardino del gruppo. Al centro il melograno comune, nello stadio ${STAGES[tStage].toLowerCase()}. Intorno le aiuole: ${plots.map((p) => `${p.me ? 'la tua' : p.name} con ${plantName(p.species).toLowerCase()}`).join(', ')}.`
-    : `Il tuo giardino, con ${s.plant ? plantName(s.plant).toLowerCase() : 'la tua pianta'} e il melograno.`;
+    ? `Il giardino del gruppo. Al centro il melograno comune, nello stadio ${STAGES[tStage].toLowerCase()}.`
+    : `Il tuo giardino, con il melograno nello stadio ${STAGES[tStage].toLowerCase()}.`;
+
+  function choose(x: Sel) {
+    setSel(x);
+    setJustSent(null);
+    setTimeout(() => sheetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
 
   function startGroup() {
     const st = getState();
@@ -48,124 +75,332 @@ export default function Garden() {
     navigate('/invita');
   }
 
+  // Nodo del sentiero: un'attività di oggi.
+  function Node({ id, big = false }: { id: ExerciseId; big?: boolean }) {
+    const def = exById(id);
+    const look = EX_LOOK[id];
+    const t = TONES[look.tone];
+    const done = doneToday.has(id);
+    const isNext = id === nextEx && !done && !rest;
+    const color = done ? '#58CC02' : isNext ? '#46A302' : t.ring;
+    const shade = done ? '#398200' : isNext ? '#2A6900' : t.text;
+    const size = big ? 'w-[4.75rem] h-[4.75rem]' : 'w-[4.25rem] h-[4.25rem]';
+    return (
+      <div className="flex flex-col items-center relative">
+        {isNext && (
+          <span className="mb-2 pill bg-orange text-ink border-2 border-white" style={{ boxShadow: '0 3px 0 0 #CC7800' }}>
+            Tocca per iniziare
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => choose({ kind: 'ex', id })}
+          aria-label={`${def.name}${done ? ', già fatto oggi' : isNext ? ', il prossimo' : ''}`}
+          aria-pressed={sel?.kind === 'ex' && sel.id === id}
+          className={`node ${size} ${isNext ? 'ring-4 ring-leaf/30' : ''}`}
+          style={{ background: color, boxShadow: `0 6px 0 0 ${shade}` }}
+        >
+          {done ? <Check size={34} strokeWidth={3.4} aria-hidden /> : <look.Icon size={big ? 36 : 30} strokeWidth={2.6} aria-hidden />}
+        </button>
+        <span className="mt-2 px-2.5 py-1 bg-white/95 rounded-xl border-2 border-moss text-center max-w-[9rem]">
+          <span className="block text-[0.875rem] font-extrabold leading-tight">{def.name}</span>
+          <span className="block text-[0.75rem] font-bold leading-tight" style={{ color: done ? '#2A6900' : t.text }}>
+            {done ? 'Fatto oggi' : def.trains}
+          </span>
+        </span>
+      </div>
+    );
+  }
+
+  // Contenuto della scheda in basso alla mappa.
+  const current: Sel = sel ?? (nextEx && !rest ? { kind: 'ex', id: nextEx } : meplot ? { kind: 'plot', name: meplot.name, me: true } : null);
+  let sheet: { badge: string; title: string; text: string; meta: string; cta: string; onCta: () => void; Icon: typeof Sprout; tone: number } | null = null;
+  if (current?.kind === 'ex') {
+    const def = exById(current.id);
+    const done = doneToday.has(current.id);
+    sheet = {
+      badge: done ? 'Già fatto oggi' : 'Attività di oggi',
+      title: def.name,
+      text: `${def.trains}. ${def.instructions(s.levels[current.id] ?? 1)}`,
+      meta: rest ? 'Per oggi hai fatto abbastanza: a domani!' : 'Sessione di oggi: circa 10 minuti, 3 esercizi senza fretta',
+      cta: rest ? 'Guarda il tuo angolo' : done ? 'Continua la sessione' : 'Coltiva insieme al gruppo',
+      onCta: () => navigate(rest ? '/angolo' : '/sessione'),
+      Icon: EX_LOOK[current.id].Icon,
+      tone: EX_LOOK[current.id].tone,
+    };
+    if (!group && !rest && !done) sheet.cta = 'Inizia la sessione di oggi';
+  } else if (current?.kind === 'plot') {
+    if (current.me) {
+      sheet = {
+        badge: 'La tua aiuola',
+        title: `Il tuo angolo: ${s.plant ? plantName(s.plant).toLowerCase() : ''}`,
+        text: `${STAGES[mine.stage]}. Il tuo angolo resta bello e curato anche quando ti prendi una pausa.`,
+        meta: 'Nessun fiore può appassire',
+        cta: 'Vai al tuo angolo',
+        onCta: () => navigate('/angolo'),
+        Icon: Flower2,
+        tone: 0,
+      };
+    } else {
+      const p = plots.find((x) => x.name === current.name);
+      sheet = {
+        badge: 'Aiuola di un compagno',
+        title: `Angolo di ${current.name}`,
+        text: `${current.name} coltiva ${p ? plantName(p.species).toLowerCase() : 'una pianta'} e fa crescere il melograno insieme a te. Manda un pensiero gentile!`,
+        meta: 'Insieme per far fiorire il giardino comune',
+        cta: `Manda un fiore a ${current.name}`,
+        onCta: () => {
+          actions.reply(`Un fiore per ${current.name}`);
+          setJustSent(`un fiore a ${current.name}`);
+        },
+        Icon: Flower2,
+        tone: p?.tone ?? 0,
+      };
+    }
+  }
+
   return (
-    <Screen nav>
-      <header className="pt-6 pb-3 flex flex-col gap-2">
-        <p className="eyebrow">{group ? 'Giardino del gruppo' : 'Il tuo giardino'} · {seasonLabel[season]}</p>
-        <h1 className="text-h1 font-extrabold">{group ? group.name : 'Il mio giardino'}</h1>
+    <Screen nav bar={group ? 'Giardino condiviso' : 'Il mio giardino'}>
+      {/* Intestazione del gruppo */}
+      <section className="pt-5 pb-4 flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="pill bg-leaf-tint border-2 border-leaf/30 text-leaf-deep uppercase tracking-wide">
+            <Leaf size={16} aria-hidden /> {group ? 'Gruppo' : 'Da solo'} · {seasonLabel[season]}
+          </span>
+          {group && <span className="pill bg-white border-2 border-moss text-ink-soft">{members.length + 1} compagni</span>}
+        </div>
+        <h1 className="text-h1 font-extrabold tracking-tight">{group ? group.name : 'Il mio giardino'}</h1>
         {group && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex -space-x-2">
-              {group.members.map((m) => <Avatar key={m.name} name={m.name} size="sm" />)}
-              <Avatar name="Tu" me size="sm" />
+          <div className="flex items-center justify-between bg-white p-2.5 rounded-2xl border-2 border-moss">
+            <div className="flex items-center -space-x-2">
+              {members.map((m, i) => <Avatar key={m.name} name={m.name} size="sm" tone={i} />)}
+              <span className="ml-3"><Avatar name="Tu" me size="sm" /></span>
             </div>
-            <span className="text-body text-ink-soft font-semibold ml-1">{group.members.length + 1} persone</span>
+            <span className="text-meta font-extrabold text-leaf-deep pr-1">{total} sessioni</span>
           </div>
         )}
-      </header>
+      </section>
 
       <div className="flex flex-col gap-5">
-        <section className="rounded-card overflow-hidden border-2 border-line bg-white">
-          <GardenScene season={season} treeStage={tStage} plots={plots} label={sceneLabel} />
-          <p className="px-5 py-4 text-body text-ink-soft font-medium">
-            {group ? 'L\'albero al centro cresce con le sessioni di tutti. Ogni aiuola è l\'angolo di una persona.' : 'Il melograno cresce con le tue sessioni della settimana.'}
-          </p>
+        {/* LA MAPPA DEL GIARDINO */}
+        <section
+          className="rounded-card overflow-hidden bg-[#FAF8F2] border-[3px] border-[#CDE5BE]"
+          style={{ boxShadow: '0 8px 0 0 #DBE8D3' }}
+          aria-label="Mappa del giardino"
+        >
+          <div className="relative">
+            {GARDEN_ILLUSTRATION ? (
+              <img src={GARDEN_ILLUSTRATION} alt={sceneLabel} className="w-full h-auto block" />
+            ) : (
+              <GardenScene season={season} treeStage={tStage} plots={meplot ? [meplot, ...plots] : plots} label={sceneLabel} />
+            )}
+            <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
+              <span className="pill bg-white/95 border-2 border-moss text-ink !text-[0.875rem]">
+                <Sprout size={18} className="text-leaf" aria-hidden /> I sentieri
+              </span>
+              <span className="pill bg-white/95 border-2 border-moss text-ink-soft !text-[0.875rem]">
+                <SunIcon size={18} className="text-orange" aria-hidden /> Fase {STAGES[tStage].toLowerCase()}
+              </span>
+            </div>
+          </div>
+
+          {/* Sentiero con le tre attività di oggi */}
+          <div className="relative px-4 pt-5 pb-3">
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 360 300" preserveAspectRatio="none" aria-hidden>
+              <path d="M 70 70 Q 130 110 180 160" fill="none" stroke="#68BB35" strokeWidth="4" strokeDasharray="6 6" opacity="0.75" />
+              <path d="M 290 70 Q 230 110 180 160" fill="none" stroke="#46A302" strokeWidth="4" strokeDasharray="6 6" opacity="0.75" />
+            </svg>
+            <div className="relative flex items-start justify-between">
+              <Node id={plan[0]} />
+              <Node id={plan[2]} />
+            </div>
+            <div className="relative flex justify-center -mt-2">
+              <Node id={plan[1]} big />
+            </div>
+          </div>
+
+          {/* Le aiuole */}
+          <div className="px-3 pb-5">
+            <p className="text-center mb-3">
+              <span className="pill bg-sun-tint border-2 border-sun-edge text-[#5C491B] !text-[0.8125rem] uppercase tracking-wider">
+                {group ? 'Le aiuole dei compagni' : 'La tua aiuola'}
+              </span>
+            </p>
+            <div className="flex items-end justify-around gap-1">
+              {row.map((p) => {
+                const me = 'me' in p && p.me;
+                const t = me ? null : TONES[p.tone % TONES.length];
+                return (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => choose({ kind: 'plot', name: p.name, me: !!me })}
+                    aria-label={me ? 'Il tuo angolo' : `Aiuola di ${p.name}: ${plantName(p.species).toLowerCase()}`}
+                    className="flex flex-col items-center gap-1 min-w-[3.5rem]"
+                  >
+                    <span
+                      className={`${me ? 'w-[4.25rem] h-[4.25rem]' : 'w-14 h-14'} rounded-full flex items-end justify-center overflow-hidden border-[3px]`}
+                      style={{
+                        background: me ? '#EEFAE6' : t!.bg,
+                        borderColor: me ? '#46A302' : t!.ring,
+                        boxShadow: `0 4px 0 0 ${me ? '#357C01' : t!.edge}`,
+                      }}
+                    >
+                      <Plant species={p.species} stage={Math.max(2, p.stage)} blooms={p.blooms} size={me ? 52 : 44} />
+                    </span>
+                    <span className={`text-[0.8125rem] font-extrabold leading-tight ${me ? 'bg-white px-1.5 rounded-md border-2 border-moss' : 'text-ink-soft'}`}>
+                      {me ? 'Il tuo angolo' : p.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </section>
 
-        <button type="button" className="btn-primary w-full text-lead !min-h-[4rem]" onClick={() => navigate('/oggi')}>
-          Vai alla sessione di oggi
-        </button>
+        {/* Scheda dell'attività o dell'aiuola scelta */}
+        {sheet && (
+          <div ref={sheetRef} className="card flex flex-col gap-3" aria-live="polite">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="pill mb-1 uppercase tracking-wide border-2" style={{ background: TONES[sheet.tone].bg, color: TONES[sheet.tone].text, borderColor: TONES[sheet.tone].edge }}>
+                  {sheet.badge}
+                </span>
+                <h2 className="text-h3 font-extrabold leading-snug mt-1">{sheet.title}</h2>
+              </div>
+              <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border-2" style={{ background: TONES[sheet.tone].bg, borderColor: TONES[sheet.tone].edge }} aria-hidden>
+                <sheet.Icon size={28} style={{ color: TONES[sheet.tone].text }} />
+              </span>
+            </div>
+            <p className="text-body font-semibold text-ink-soft">{sheet.text}</p>
+            <p className="inline-flex items-center gap-2 text-meta font-bold text-ink-soft bg-canvas px-3.5 py-2 rounded-xl border-2 border-moss">
+              <Clock size={20} className="text-leaf shrink-0" aria-hidden /> {sheet.meta}
+            </p>
+            {justSent ? (
+              <Notice>Hai mandato {justSent}.</Notice>
+            ) : (
+              <button type="button" className="btn-primary w-full !min-h-[4rem]" onClick={sheet.onCta}>
+                {current?.kind === 'ex' && !rest ? <Play size={24} fill="#fff" aria-hidden /> : <Flower2 size={24} aria-hidden />} {sheet.cta}
+              </button>
+            )}
+          </div>
+        )}
 
-        <Card>
-          <p className="eyebrow">Obiettivo della settimana</p>
-          <h2 className="text-h3 font-extrabold mt-1 mb-4">Far fiorire il melograno</h2>
+        {/* Obiettivo della settimana */}
+        <section className="card flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-h3 font-extrabold leading-snug">Obiettivo della settimana: far fiorire il melograno</h2>
+              <p className="text-meta font-semibold text-ink-soft mt-0.5">Ogni sessione nutre l'albero {group ? 'di tutti' : ''}</p>
+            </div>
+            <span className="w-12 h-12 rounded-2xl bg-leaf-tint border-2 border-leaf/30 flex items-center justify-center shrink-0" aria-hidden>
+              <Sprout size={28} className="text-leaf" />
+            </span>
+          </div>
           <Steps labels={STAGES} current={tStage >= 4 ? -1 : tStage} done={tStage >= 4 ? 5 : tStage} />
-          <p className="text-body font-semibold mt-4">
-            {total === 0
-              ? 'La settimana è appena cominciata: il primo seme aspetta.'
-              : `${group ? 'Insieme avete fatto' : 'Hai fatto'} ${total} ${total === 1 ? 'sessione' : 'sessioni'} questa settimana.${tStage >= 4 ? ' Il melograno è fiorito!' : ''}`}
-          </p>
-        </Card>
-
-        <button type="button" className="card text-left flex items-center gap-4 !py-4" onClick={() => navigate('/angolo')}>
-          <div className="flex-1">
-            <h2 className="text-h3 font-extrabold">Il tuo angolo</h2>
-            <p className="text-body text-ink-soft mt-0.5">
-              {s.plant ? `${plantName(s.plant)}: ${STAGES[mine.stage].toLowerCase()}.` : ''} Resta com'è anche quando fai una pausa.
+          <div className="bg-leaf-tint rounded-2xl p-3.5 border-2 border-leaf/25 flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-white border-2 border-leaf/30 flex items-center justify-center shrink-0" aria-hidden>
+              <Flower2 size={22} className="text-leaf" />
+            </span>
+            <p className="text-body font-bold text-leaf-deep leading-tight">
+              {total === 0
+                ? 'La settimana è appena cominciata: il primo seme aspetta.'
+                : `${group ? 'Insieme avete fatto' : 'Hai fatto'} ${total} ${total === 1 ? 'sessione' : 'sessioni'} questa settimana.${tStage >= 4 ? ' Il melograno è fiorito!' : ''}`}
             </p>
           </div>
-          <ChevronRight size={28} className="text-ink-soft shrink-0" aria-hidden />
-        </button>
+        </section>
 
         {group ? (
           <>
-            <Card>
-              <h2 className="text-h3 font-extrabold mb-3">Dal gruppo</h2>
-              <ul className="flex flex-col gap-3">
-                {groupFeed(s).map((f, i) => (
-                  <li key={`${f.who}-${f.day}-${i}`} className="flex items-center gap-3">
-                    <Avatar name={f.who} size="sm" />
-                    <div>
-                      <p className="text-body leading-snug"><strong>{f.who}</strong> {f.text}</p>
-                      <p className="text-meta text-ink-soft">{relativeDay(f.day)}</p>
-                    </div>
-                  </li>
-                ))}
+            {/* Messaggi dal gruppo */}
+            <section className="card flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-h3 font-extrabold">Messaggi dal gruppo</h2>
+                  <p className="text-meta font-semibold text-ink-soft">I pensieri gentili degli amici</p>
+                </div>
+                <MessagesSquare size={28} className="text-leaf" aria-hidden />
+              </div>
+              <ul className="flex flex-col gap-2.5">
+                {groupFeed(s).map((f, i) => {
+                  const idx = members.findIndex((m) => m.name === f.who);
+                  const t = toneFor(f.who, idx >= 0 ? idx : undefined);
+                  return (
+                    <li key={`${f.who}-${f.day}-${i}`} className="flex items-center gap-3 p-3 rounded-2xl border-2" style={{ background: t.soft, borderColor: t.edge }}>
+                      <Avatar name={f.who} size="sm" tone={idx >= 0 ? idx : undefined} />
+                      <div>
+                        <p className="text-body font-bold leading-snug">{f.who} {f.text}</p>
+                        <p className="text-meta text-ink-soft">{relativeDay(f.day)}</p>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
-              <div ref={repliesRef} className="mt-5">
-                <p className="text-body font-bold mb-2">Rispondi al gruppo:</p>
+              <div ref={repliesRef} className="flex flex-col gap-2.5">
+                <p className="text-body font-extrabold text-ink-soft">Rispondi con un pensiero:</p>
                 <div className="grid grid-cols-3 gap-2">
                   {QUICK_REPLIES.map((r) => (
                     <button
                       key={r}
                       type="button"
                       aria-pressed={repliedToday.includes(r)}
-                      onClick={() => { actions.reply(r); setJustSent(r); }}
-                      className={`btn !px-2 !text-meta border-2 ${repliedToday.includes(r) ? 'bg-leaf text-white border-leaf-dark' : 'bg-white border-line'}`}
-                      style={{ boxShadow: repliedToday.includes(r) ? '0 3px 0 0 #1F5100' : '0 3px 0 0 #CBD5E1' }}
+                      onClick={() => { actions.reply(r); setJustSent(null); }}
+                      className="btn-reply"
                     >
                       {r}
                     </button>
                   ))}
                 </div>
-                {justSent && <div className="mt-3"><Notice>Hai mandato «{justSent}» al gruppo.</Notice></div>}
+                {QUICK_REPLIES.some((r) => repliedToday.includes(r)) && (
+                  <p className="text-center">
+                    <span className="pill bg-leaf-tint border-2 border-leaf/40 text-leaf-deep"><Check size={18} aria-hidden /> Messaggio inviato agli amici</span>
+                  </p>
+                )}
               </div>
-            </Card>
+            </section>
 
-            <Card className="!bg-sun-tint !border-sun-dark/30">
-              <div className="flex items-center gap-2 mb-1">
-                <Footprints size={22} aria-hidden />
-                <p className="eyebrow !text-ink">Sfida fuori dall'app</p>
-              </div>
-              <h2 className="text-h3 font-extrabold">{challenge.title}</h2>
-              <p className="text-body mt-1">{challenge.text}</p>
-              {wk?.groupChallenge === 'fatta' ? (
-                <div className="mt-3"><Notice>Bellissimo! Nel giardino è comparso un sentiero.</Notice></div>
-              ) : wk?.groupChallenge === 'dopo' ? (
-                <div className="mt-3 flex flex-col gap-2">
-                  <Notice tone="sun">Nessuna fretta: la sfida resta qui fino a domenica.</Notice>
-                  <button type="button" className="btn-primary w-full" onClick={() => actions.updateWeek({ groupChallenge: 'fatta' })}>L'abbiamo fatta!</button>
+            {/* Sfida fuori dall'app */}
+            <section className="rounded-card p-5 bg-sun-tint border-2 border-sun-edge flex flex-col gap-3.5" style={{ boxShadow: '0 6px 0 0 #F0D28C' }}>
+              <div className="flex items-center gap-3">
+                <span className="w-12 h-12 rounded-2xl bg-orange flex items-center justify-center shrink-0" style={{ boxShadow: '0 3px 0 0 #CC7800' }} aria-hidden>
+                  <Footprints size={28} color="#fff" />
+                </span>
+                <div>
+                  <h2 className="text-h3 font-extrabold text-[#3D2B00] leading-snug">Invito all'aperto: {challenge.title.toLowerCase()}</h2>
+                  <p className="text-meta font-bold text-[#735200]">Sfida fuori dall'app</p>
                 </div>
+              </div>
+              <p className="text-body font-medium text-[#5C491B]">{challenge.text} Senza fretta, per stare bene.</p>
+              {wk?.groupChallenge === 'fatta' ? (
+                <Notice>Che bello, registrato con gioia! Nel giardino è comparso un sentiero.</Notice>
               ) : (
-                <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="grid grid-cols-2 gap-3">
                   <button type="button" className="btn-primary" onClick={() => actions.updateWeek({ groupChallenge: 'fatta' })}>Fatta!</button>
-                  <button type="button" className="btn-outline" onClick={() => actions.updateWeek({ groupChallenge: 'dopo' })}>Non ancora</button>
+                  <button
+                    type="button"
+                    aria-pressed={wk?.groupChallenge === 'dopo'}
+                    className="btn-outline !border-sun-edge"
+                    onClick={() => actions.updateWeek({ groupChallenge: 'dopo' })}
+                  >
+                    Non ancora
+                  </button>
                 </div>
               )}
-            </Card>
+              {wk?.groupChallenge === 'dopo' && <p className="text-center text-body font-extrabold text-[#735200]">Nessun pensiero, c'è tempo con calma.</p>}
+            </section>
 
             <button type="button" className="btn-outline w-full" onClick={() => navigate('/invita')}>
               <UserPlus size={22} aria-hidden /> Invita qualcuno
             </button>
           </>
         ) : (
-          <Card>
+          <section className="card">
             <h2 className="text-h3 font-extrabold">Un giardino da condividere?</h2>
             <p className="text-body text-ink-soft mt-1">Con amici o familiari il melograno cresce più in fretta, e vi mandate un saluto ogni tanto.</p>
             <button type="button" className="btn-outline w-full mt-4" onClick={startGroup}>
               <UserPlus size={22} aria-hidden /> Crea un giardino condiviso
             </button>
-          </Card>
+          </section>
         )}
       </div>
     </Screen>

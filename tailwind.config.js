@@ -7,29 +7,43 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: '#F7F9F4',
+        // Palette da DESIGN.md di Stitch ("Tactile Botanical").
+        canvas: '#F7FAF5',
         ink: '#1F2937',
         'ink-soft': '#4B5563',
         line: '#E5E7EB',
         'line-strong': '#CBD5E1',
-        // Il verde dei pulsanti è un tono più scuro di quello di Stitch,
-        // perché il testo bianco sopra superi il contrasto 4.5:1.
+        moss: '#DCEBD3', // bordo delle schede
+        // Il verde principale di Stitch (#46A302): con testo bianco grande e in grassetto supera il contrasto 3:1.
         leaf: {
-          DEFAULT: '#378500',
-          dark: '#2A6900',
-          deep: '#1F5100',
+          DEFAULT: '#46A302',
+          dark: '#357C01',
+          deep: '#2A6900',
           bright: '#58CC02',
-          tint: '#E8F8D8',
+          tint: '#EEFAE6',
         },
         sun: {
           DEFAULT: '#FFC800',
           dark: '#D99B00',
-          tint: '#FFF6D6',
+          tint: '#FFF9ED',
+          edge: '#FFDB99',
+        },
+        orange: {
+          DEFAULT: '#FF9600',
+          dark: '#CC7800',
+          text: '#A35400',
+          tint: '#FFF4E0',
         },
         sky: {
-          DEFAULT: '#2B70C9',
-          dark: '#1E5598',
-          tint: '#E1F5FE',
+          DEFAULT: '#1CB0F6',
+          dark: '#1899D6',
+          text: '#0369A1',
+          tint: '#E0F4FF',
+        },
+        plum: {
+          DEFAULT: '#A855F7',
+          text: '#7E22CE',
+          tint: '#F3E8FF',
         },
         petal: {
           DEFAULT: '#E5484D',
@@ -49,7 +63,7 @@ export default {
         hero: ['2.25rem', { lineHeight: '1.15' }],
       },
       borderRadius: {
-        card: '1.5rem',
+        card: '1.75rem',
         btn: '1.125rem',
       },
       minHeight: {

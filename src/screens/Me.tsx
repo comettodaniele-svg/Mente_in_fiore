@@ -38,10 +38,20 @@ const TEXT_OPTS: { id: Settings['text']; label: string }[] = [
 export default function Me() {
   const s = useApp();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [taps, setTaps] = useState(0);
+  // Come su Android: toccare 5 volte la versione sblocca la modalità sviluppatore.
+  function tapVersion() {
+    const n = taps + 1;
+    setTaps(n);
+    if (n >= 5) {
+      actions.update({ devUnlocked: true });
+      navigate('/sviluppatore');
+    }
+  }
   const personal = s.personalGoal ? qById(s.personalGoal) : undefined;
 
   return (
-    <Screen nav>
+    <Screen nav bar="Profilo">
       <header className="pt-6 pb-4 flex items-center gap-4">
         {s.plant && <Plant species={s.plant} stage={4} size={72} />}
         <div>
@@ -121,7 +131,15 @@ export default function Me() {
             </div>
           )}
         </Card>
-        <p className="text-meta text-ink-soft text-center px-4">Mente in fiore · versione di prova 0.1. Non è un dispositivo medico e non fa diagnosi.</p>
+        {s.devUnlocked && (
+          <button type="button" className="btn-outline w-full" onClick={() => navigate('/sviluppatore')}>
+            Modalità sviluppatore
+          </button>
+        )}
+        <button type="button" onClick={tapVersion} className="text-meta text-ink-soft text-center px-4 min-h-touch">
+          Mente in fiore · versione di prova 0.1. Non è un dispositivo medico e non fa diagnosi.
+          {taps > 1 && taps < 5 && !s.devUnlocked && <span className="block font-bold">Ancora {5 - taps} tocchi per la modalità sviluppatore</span>}
+        </button>
       </div>
     </Screen>
   );

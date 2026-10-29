@@ -78,6 +78,20 @@ export interface AppState {
   lastOpen: string | null;
   /** Giorno in cui è stato mostrato il "bentornato". */
   welcomeBack: string | null;
+  /** Modalità sviluppatore: sbloccata, se le prove salvano i risultati, registro delle ultime prove. */
+  devUnlocked: boolean;
+  devSave: boolean;
+  devLog: DevLogEntry[];
+}
+
+export interface DevLogEntry {
+  ex: ExerciseId;
+  at: string;
+  level: number;
+  next: number;
+  phrase: string;
+  correct: number;
+  total: number;
 }
 
 const KEY = 'mente-in-fiore-v1';
@@ -101,6 +115,9 @@ const initial: AppState = {
   settings: { text: 'normale', contrast: false, calm: false, voice: false },
   lastOpen: null,
   welcomeBack: null,
+  devUnlocked: false,
+  devSave: false,
+  devLog: [],
 };
 
 function load(): AppState {
@@ -198,6 +215,14 @@ export const actions = {
       ...s,
       decorations: s.decorations.includes(id) ? s.decorations.filter((d) => d !== id) : [...s.decorations, id],
     }));
+  },
+
+  setLevel(ex: ExerciseId, level: number) {
+    setState((s) => ({ ...s, levels: { ...s.levels, [ex]: level } }));
+  },
+
+  logDev(e: DevLogEntry) {
+    setState((s) => ({ ...s, devLog: [e, ...s.devLog].slice(0, 30) }));
   },
 
   setSettings(patch: Partial<Settings>) {

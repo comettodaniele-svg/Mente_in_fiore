@@ -77,7 +77,7 @@ export default function Progress() {
     rs.reduce<ResultEntry | null>((b, r) => (!b ? r : (r.lowerIsBetter ? r.metric < b.metric : r.metric > b.metric) ? r : b), null);
 
   return (
-    <Screen nav>
+    <Screen nav bar="Progressi">
       <header className="pt-6 pb-4">
         <h1 className="text-h1 font-extrabold">I tuoi progressi</h1>
       </header>
