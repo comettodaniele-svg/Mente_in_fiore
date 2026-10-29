@@ -11,7 +11,8 @@ permissions:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    # L'immagine Ubuntu 24.04 di GitHub include già l'Android SDK.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -20,12 +21,10 @@ jobs:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
-
-      - uses: android-actions/setup-android@v3
 
       - name: Installa e costruisci la parte web
         run: |
