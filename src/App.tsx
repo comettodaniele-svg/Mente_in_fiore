@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { actions, getState, useApp } from './store';
 import { navigate, useRoute } from './router';
 import { daysBetween, dayKey } from './lib/dates';
+import { checkForUpdate } from './lib/update';
 import { Screen } from './components/ui';
 import { QuestionnaireFlow } from './screens/Questionnaire';
 import { back } from './router';
@@ -45,7 +46,11 @@ export default function App() {
       navigate('/bentornato', { replace: true });
     }
     actions.touchOpen();
+    checkForUpdate();
+    const onVisible = () => document.visibilityState === 'visible' && checkForUpdate();
+    document.addEventListener('visibilitychange', onVisible);
     setChecked(true);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
   useEffect(() => {

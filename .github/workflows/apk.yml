@@ -27,6 +27,8 @@ jobs:
           java-version: 21
 
       - name: Installa e costruisci la parte web
+        env:
+          VITE_BUILD: ${{ github.run_number }}
         run: |
           npm ci
           npm run build
@@ -36,7 +38,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon -PbuildNumber=${{ github.run_number }}
 
       - name: Rinomina l'APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk MenteInFiore.apk
@@ -55,3 +57,15 @@ jobs:
             Versione di prova. Scarica **MenteInFiore.apk** qui sotto e aprila sul telefono Android
             (la prima volta Android chiede di consentire l'installazione da questa fonte).
           files: MenteInFiore.apk
+
+      # Il file letto dall'app per sapere se c'è un aggiornamento, su un ramo a parte ("update").
+      - name: Pubblica version.json per gli aggiornamenti nell'app
+        run: |
+          N=${{ github.run_number }}
+          mkdir upd && cd upd
+          printf '{"build": %s, "version": "0.1.%s", "apk": "https://github.com/%s/releases/download/v0.1.%s/MenteInFiore.apk"}\n' "$N" "$N" "${{ github.repository }}" "$N" > version.json
+          cat version.json
+          git init -q -b update
+          git add version.json
+          git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -q -m "Versione 0.1.$N"
+          git push -f -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" update

@@ -7,6 +7,8 @@ import { Plant } from '../art/Plant';
 import { plantName } from '../data/plants';
 import { canSpeak } from '../lib/speech';
 import { qById } from '../data/questionnaire';
+import { UpdateBanner } from '../components/UpdateBanner';
+import { VERSION, checkForUpdate, isApp, useUpdate } from '../lib/update';
 
 function Toggle({ label, hint, on, onChange, disabled }: { label: string; hint?: string; on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
@@ -39,6 +41,7 @@ export default function Me() {
   const s = useApp();
   const [confirmReset, setConfirmReset] = useState(false);
   const [taps, setTaps] = useState(0);
+  const upd = useUpdate();
   // Come su Android: toccare 5 volte la versione sblocca la modalità sviluppatore.
   function tapVersion() {
     const n = taps + 1;
@@ -61,6 +64,7 @@ export default function Me() {
       </header>
 
       <div className="flex flex-col gap-5">
+        <UpdateBanner />
         <Card>
           <h2 className="text-h3 font-extrabold mb-1">Leggibilità</h2>
           <p className="text-body text-ink-soft mb-3">Prova: questo testo cambia mentre scegli.</p>
@@ -131,13 +135,29 @@ export default function Me() {
             </div>
           )}
         </Card>
+        <Card>
+          <h2 className="text-h3 font-extrabold mb-1">Aggiornamenti</h2>
+          <p className="text-body">Versione installata: <strong>{VERSION}</strong></p>
+          {isApp() ? (
+            <>
+              <button type="button" className="btn-outline w-full mt-4" disabled={upd.status === 'checking'} onClick={() => checkForUpdate(true)}>
+                {upd.status === 'checking' ? 'Controllo in corso…' : 'Controlla se ci sono aggiornamenti'}
+              </button>
+              {upd.status === 'none' && <p className="text-body font-semibold text-leaf-deep mt-3">Hai già l'ultima versione.</p>}
+              {upd.status === 'error' && <p className="text-body text-ink-soft mt-3">Non riesco a controllare: verifica la connessione a internet.</p>}
+            </>
+          ) : (
+            <p className="text-body text-ink-soft mt-1">Nella versione web l'app si aggiorna da sola.</p>
+          )}
+        </Card>
+
         {s.devUnlocked && (
           <button type="button" className="btn-outline w-full" onClick={() => navigate('/sviluppatore')}>
             Modalità sviluppatore
           </button>
         )}
         <button type="button" onClick={tapVersion} className="text-meta text-ink-soft text-center px-4 min-h-touch">
-          Mente in fiore · versione di prova 0.1. Non è un dispositivo medico e non fa diagnosi.
+          Mente in fiore · versione di prova {VERSION}. Non è un dispositivo medico e non fa diagnosi.
           {taps > 1 && taps < 5 && !s.devUnlocked && <span className="block font-bold">Ancora {5 - taps} tocchi per la modalità sviluppatore</span>}
         </button>
       </div>

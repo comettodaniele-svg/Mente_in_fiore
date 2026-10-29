@@ -11,6 +11,7 @@ import { dayKey, fromDayKey, monthName, weekKey, weekdayName } from '../lib/date
 import { MOTIVATIONS } from '../data/challenges';
 import { qById } from '../data/questionnaire';
 import { Plant } from '../art/Plant';
+import { UpdateBanner } from '../components/UpdateBanner';
 import { STAGES } from '../data/plants';
 
 function greeting() {
@@ -50,6 +51,7 @@ export default function Today() {
       </header>
 
       <div className="flex flex-col gap-5">
+        <UpdateBanner />
         <Card className="!p-0 overflow-hidden">
           <div className="flex items-center gap-4 p-5 pb-3">
             {s.plant && <Plant species={s.plant} stage={plant.stage} blooms={plant.blooms} size={84} />}
