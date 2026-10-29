@@ -1,0 +1,58 @@
+name: APK Android
+
+# A ogni modifica su main: costruisce l'app Android e la pubblica come "Release" scaricabile.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Installa e costruisci la parte web
+        run: |
+          npm ci
+          npm run build
+          npx cap sync android
+
+      - name: Costruisci l'APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rinomina l'APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk MenteInFiore.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MenteInFiore-apk
+          path: MenteInFiore.apk
+
+      - name: Pubblica la release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Mente in fiore 0.1.${{ github.run_number }}
+          body: |
+            Versione di prova. Scarica **MenteInFiore.apk** qui sotto e aprila sul telefono Android
+            (la prima volta Android chiede di consentire l'installazione da questa fonte).
+          files: MenteInFiore.apk

@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dimensione del testo scelta dall'utente: tutto è in rem, quindi cresce insieme. */
+html { font-size: 100%; -webkit-text-size-adjust: 100%; }
+html[data-text='grande'] { font-size: 112.5%; }
+html[data-text='molto'] { font-size: 125%; }
+
+body {
+  @apply bg-canvas text-ink font-sans antialiased;
+  margin: 0;
+  overscroll-behavior: none;
+}
+
+/* Contrasto più forte */
+html.contrast .text-ink-soft { color: #111827 !important; }
+html.contrast .border-line { border-color: #6B7280 !important; }
+html.contrast body { background: #FFFFFF; }
+
+/* Riduci le animazioni (scelta dell'utente o impostazione del telefono) */
+html.calm *, html.calm *::before, html.calm *::after {
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+:focus-visible { outline: 3px solid #2B70C9; outline-offset: 3px; border-radius: 0.75rem; }
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-touch px-5 rounded-btn font-bold text-body select-none;
+    transition: transform 80ms ease, box-shadow 80ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active:not(:disabled) { transform: translateY(3px); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .btn-primary { @apply btn bg-leaf text-white; box-shadow: 0 4px 0 0 #1F5100; }
+  .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 0 #1F5100; }
+
+  .btn-sun { @apply btn bg-sun text-ink; box-shadow: 0 4px 0 0 #D99B00; }
+  .btn-sun:active:not(:disabled) { box-shadow: 0 1px 0 0 #D99B00; }
+
+  .btn-outline { @apply btn bg-white text-ink border-2 border-line; box-shadow: 0 4px 0 0 #CBD5E1; }
+  .btn-outline:active:not(:disabled) { box-shadow: 0 1px 0 0 #CBD5E1; }
+
+  .card { @apply bg-white rounded-card border-2 border-line p-5; }
+
+  .choice {
+    @apply w-full text-left bg-white border-2 border-line rounded-[1.25rem] px-4 py-3 min-h-touch flex items-center gap-3 text-body font-semibold;
+    box-shadow: 0 4px 0 0 #E5E7EB;
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+  .choice:active { transform: translateY(3px); box-shadow: 0 1px 0 0 #E5E7EB; }
+  .choice[aria-pressed='true'], .choice[aria-checked='true'] {
+    @apply bg-leaf-tint border-leaf;
+    box-shadow: 0 4px 0 0 #378500;
+  }
+
+  .eyebrow { @apply text-meta font-bold text-ink-soft; }
+  .pill { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-meta font-bold; }
+}
+
+@keyframes grow-in {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.grow-in { animation: grow-in 700ms cubic-bezier(.2,.9,.3,1.2) both; transform-origin: 50% 100%; }
+
+@keyframes fade-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.fade-up { animation: fade-up 300ms ease both; }
+
+@keyframes flash-ok {
+  0% { box-shadow: 0 0 0 0 rgba(55,133,0,.55); }
+  100% { box-shadow: 0 0 0 14px rgba(55,133,0,0); }
+}
+.flash-ok { animation: flash-ok 500ms ease-out; }

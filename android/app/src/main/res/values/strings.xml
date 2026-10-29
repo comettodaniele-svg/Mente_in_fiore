@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mente in fiore</string>
+    <string name="title_activity_main">Mente in fiore</string>
+    <string name="package_name">it.menteinfiore.app</string>
+    <string name="custom_url_scheme">it.menteinfiore.app</string>
+</resources>
