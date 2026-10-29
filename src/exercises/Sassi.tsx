@@ -23,8 +23,9 @@ export default function Sassi({ level, onDone }: ExerciseProps) {
   const [best, setBest] = useState(0);
   const [lastOk, setLastOk] = useState(false);
 
+  // Mostra la sequenza all'inizio di ogni prova. Dipende solo da "trial":
+  // se dipendesse anche da "phase", il passaggio a 'show' interromperebbe l'animazione.
   useEffect(() => {
-    if (phase !== 'ready') return;
     let cancelled = false;
     (async () => {
       await wait(800);
@@ -43,7 +44,8 @@ export default function Sassi({ level, onDone }: ExerciseProps) {
     return () => {
       cancelled = true;
     };
-  }, [phase, seq, alive]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trial]);
 
   async function tap(c: number) {
     if (phase !== 'input') return;

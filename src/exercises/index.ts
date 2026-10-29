@@ -63,7 +63,7 @@ export const EXERCISES: ExerciseDef[] = [
     maxLevel: 6,
     phrase: (o) => {
       const f = o.extra?.farfalla ? ' e ti sei ricordato della farfalla' : '';
-      return `Hai trovato ${o.metric} girasoli su ${o.total}${f}`;
+      return `Hai trovato ${o.metric} ${o.metric === 1 ? 'girasole' : 'girasoli'} su ${o.total}${f}`;
     },
     adapt: (l, o) => stepLevel(l, acc(o) - (o.extra?.errori ?? 0) * 0.05, 6, 0.85, 0.6),
     component: Trova,
@@ -75,7 +75,7 @@ export const EXERCISES: ExerciseDef[] = [
     trains: 'Ricordare cose dette o lette',
     instructions: (l) => `Leggi una lista di ${spesaLen(l)} cose da comprare. Dopo una breve pausa, ritrovale in mezzo ad altre.`,
     maxLevel: 7,
-    phrase: (o) => `Hai ricordato ${o.metric} cose della lista su ${o.total}`,
+    phrase: (o) => `Hai ricordato ${o.metric} ${o.metric === 1 ? 'cosa' : 'cose'} della lista su ${o.total}`,
     adapt: (l, o) => stepLevel(l, acc(o), 7, 0.8, 0.5),
     component: Spesa,
   },
@@ -110,7 +110,7 @@ export const EXERCISES: ExerciseDef[] = [
     trains: 'Trovare le parole giuste',
     instructions: () => 'Trova la parola che non c\'entra con le altre, oppure la parola che corrisponde alla descrizione.',
     maxLevel: 6,
-    phrase: (o) => `Hai trovato ${o.metric} parole su ${o.total}`,
+    phrase: (o) => `Hai trovato ${o.metric} ${o.metric === 1 ? 'parola' : 'parole'} su ${o.total}`,
     adapt: (l, o) => stepLevel(l, acc(o), 6, 0.85, 0.5),
     component: Parole,
   },

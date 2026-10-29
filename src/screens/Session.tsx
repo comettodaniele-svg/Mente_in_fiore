@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { actions, getState, useApp } from '../store';
 import { Listen, Notice, Screen } from '../components/ui';
-import { navigate } from '../router';
+import { navigate, useRoute } from '../router';
 import { todayPlan, levelOf } from '../lib/plan';
-import { exById } from '../exercises';
+import { EXERCISES, exById } from '../exercises';
 import type { ExerciseId, ExerciseOutcome } from '../exercises/types';
 import { qById } from '../data/questionnaire';
 import { speak, stopSpeaking } from '../lib/speech';
@@ -14,7 +14,14 @@ type Phase = 'intro' | 'play' | 'result';
 
 export default function Session() {
   const s = useApp();
-  const plan = useMemo(() => todayPlan(getState()), []);
+  // #/sessione?ex=sassi,colpo permette di provare esercizi precisi (utile per i test).
+  const route = useRoute();
+  const plan = useMemo(() => {
+    const m = route.match(/[?&]ex=([a-z,]+)/);
+    const chosen = (m?.[1].split(',') ?? []).filter((x): x is ExerciseId => EXERCISES.some((e) => e.id === x));
+    return chosen.length ? chosen : todayPlan(getState());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [i, setI] = useState(0);
   const [phase, setPhase] = useState<Phase>('intro');
   const [outcome, setOutcome] = useState<ExerciseOutcome | null>(null);

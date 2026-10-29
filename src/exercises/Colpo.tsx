@@ -37,8 +37,9 @@ export default function Colpo({ level, onDone }: ExerciseProps) {
     return { center: CENTER[randInt(rng, 0, 1)], target, others };
   }
 
+  // Presentazione di ogni prova. Dipende solo da "trial": se dipendesse da "phase",
+  // il passaggio a 'show' interromperebbe la sequenza e l'esercizio resterebbe fermo.
   useEffect(() => {
-    if (phase !== 'fix') return;
     let cancelled = false;
     (async () => {
       await wait(700);
@@ -54,7 +55,8 @@ export default function Colpo({ level, onDone }: ExerciseProps) {
     return () => {
       cancelled = true;
     };
-  }, [phase, trial, ms, alive]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trial]);
 
   async function chooseLocation(i: number) {
     const ok = answer1 === stim.center && i === stim.target;
