@@ -16,7 +16,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Chiave fissa per la versione di prova: così ogni nuovo APK si installa sopra il precedente
+    // senza perdere i dati. Per la pubblicazione sul Play Store va sostituita con una chiave privata.
+    signingConfigs {
+        prova {
+            storeFile file('prova.keystore')
+            storePassword 'menteinfiore'
+            keyAlias 'menteinfiore'
+            keyPassword 'menteinfiore'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.prova
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
