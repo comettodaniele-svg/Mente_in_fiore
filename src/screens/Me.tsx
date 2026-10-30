@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { actions, useApp, type Settings } from '../store';
 import { Card, Notice, Screen } from '../components/ui';
 import { navigate } from '../router';
-import { Plant } from '../art/Plant';
+import { PlantPhoto } from '../art/PlantPhoto';
 import { plantName } from '../data/plants';
 import { canSpeak } from '../lib/speech';
 import { qById } from '../data/questionnaire';
@@ -56,7 +56,7 @@ export default function Me() {
   return (
     <Screen nav bar="Profilo">
       <header className="pt-6 pb-4 flex items-center gap-4">
-        {s.plant && <Plant species={s.plant} stage={4} size={72} />}
+        {s.plant && <PlantPhoto species={s.plant} className="w-20 h-20 shrink-0 border-[3px] border-leaf/30" round />}
         <div>
           <h1 className="text-h1 font-extrabold">{s.name || 'Io'}</h1>
           {s.plant && <p className="text-body text-ink-soft">La tua pianta: {plantName(s.plant).toLowerCase()}</p>}

@@ -5,7 +5,7 @@ import { actions, demoMembers, getState, makeCode, useApp } from '../store';
 import { MOTIVATIONS } from '../data/challenges';
 import { QUESTIONS, type Answer } from '../data/questionnaire';
 import { PLANTS, type PlantId } from '../data/plants';
-import { Plant } from '../art/Plant';
+import { PlantPhoto } from '../art/PlantPhoto';
 import { GARDEN_BY_SEASON } from '../art/illustration';
 import { seasonOf } from '../lib/dates';
 import { Dots, Notice, Screen, TopBar } from '../components/ui';
@@ -246,7 +246,7 @@ function PlantStep({ onNext }: { onNext: () => void }) {
                   <Check size={20} strokeWidth={3.2} color="#fff" />
                 </span>
               )}
-              <Plant species={p.id} stage={4} size={96} />
+              <PlantPhoto species={p.id} className="w-full aspect-square rounded-2xl" />
               <span className="text-lead font-extrabold leading-tight">{p.name}</span>
               <span className="text-meta text-ink-soft leading-tight">{owner ? `Già nel giardino di ${owner}` : p.note}</span>
             </button>

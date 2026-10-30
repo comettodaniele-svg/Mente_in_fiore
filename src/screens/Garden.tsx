@@ -7,9 +7,9 @@ import { actions, demoMembers, getState, makeCode, useApp } from '../store';
 import { Avatar, Notice, Screen, Steps, TONES, toneFor } from '../components/ui';
 import { navigate, useRoute } from '../router';
 import type { PlotInfo } from '../art/Scenes';
-import { Plant } from '../art/Plant';
+import { PlantPhoto } from '../art/PlantPhoto';
 import { GARDEN_BY_SEASON } from '../art/illustration';
-import { STAGES, personalStage, plantName } from '../data/plants';
+import { STAGES, personalStage, plantName, type PlantId } from '../data/plants';
 import { groupFeed, groupSessionsThisWeek, memberTotalSessions, myPlant, sessionsOn, treeStage } from '../lib/derive';
 import { dayKey, relativeDay, seasonLabel, seasonOf, weekKey } from '../lib/dates';
 import { QUICK_REPLIES, challengeForWeek } from '../data/challenges';
@@ -248,7 +248,7 @@ export default function Garden() {
                           boxShadow: `0 4px 0 0 ${me ? '#357C01' : t!.edge}`,
                         }}
                       >
-                        <Plant species={p.species} stage={Math.max(2, p.stage)} blooms={p.blooms} size={me ? 52 : 44} />
+                        <PlantPhoto species={p.species as PlantId} stage={p.stage} className="w-full h-full" />
                       </span>
                       <span className={`text-[0.8125rem] font-extrabold leading-tight px-1.5 rounded-md ${me ? 'bg-white border-2 border-moss' : 'bg-white/85 text-ink'}`}>
                         {me ? 'Il tuo angolo' : p.name}

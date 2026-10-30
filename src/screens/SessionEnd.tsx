@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useApp } from '../store';
 import { Notice, Screen } from '../components/ui';
 import { navigate } from '../router';
-import { Plant } from '../art/Plant';
+import { PlantPhoto } from '../art/PlantPhoto';
 import { STAGES, plantName } from '../data/plants';
 import { myPlant, myPlantBefore } from '../lib/derive';
 import { exById } from '../exercises';
@@ -40,7 +40,7 @@ export default function SessionEnd() {
       <div className="pt-10 flex flex-col items-center gap-3">
         {s.plant && (
           <div className="relative" key={`${now.stage}-${now.blooms}`}>
-            <Plant species={s.plant} stage={now.stage} blooms={now.blooms} size={200} className={grew ? 'grow-in' : ''} label={`${plantName(s.plant)}: ${STAGES[now.stage]}`} />
+            <PlantPhoto species={s.plant} stage={now.stage} className={`w-56 h-56 border-[4px] border-white ${grew ? 'grow-in' : ''}`} round label={`${plantName(s.plant)}: ${STAGES[now.stage]}`} />
           </div>
         )}
         <h1 className="text-hero font-extrabold">Ben fatto{s.name ? `, ${s.name}` : ''}!</h1>

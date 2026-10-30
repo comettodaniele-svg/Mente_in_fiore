@@ -10,7 +10,7 @@ import { activeDaysThisWeek, daysSinceQuestionnaire, myPlant, sessionsOn, weekly
 import { dayKey, fromDayKey, monthName, weekKey, weekdayName } from '../lib/dates';
 import { MOTIVATIONS } from '../data/challenges';
 import { qById } from '../data/questionnaire';
-import { Plant } from '../art/Plant';
+import { PlantPhoto } from '../art/PlantPhoto';
 import { UpdateBanner } from '../components/UpdateBanner';
 import { STAGES } from '../data/plants';
 
@@ -54,7 +54,7 @@ export default function Today() {
         <UpdateBanner />
         <Card className="!p-0 overflow-hidden">
           <div className="flex items-center gap-4 p-5 pb-3">
-            {s.plant && <Plant species={s.plant} stage={plant.stage} blooms={plant.blooms} size={84} />}
+            {s.plant && <PlantPhoto species={s.plant} stage={plant.stage} className="w-24 h-24 shrink-0 border-[3px] border-leaf/30" round />}
             <div className="flex-1">
               <p className="eyebrow">{rest ? 'Per oggi basta così' : done === 1 ? 'Sessione completata' : 'La sessione di oggi'}</p>
               <h2 className="text-h3 font-extrabold leading-tight mt-0.5">
