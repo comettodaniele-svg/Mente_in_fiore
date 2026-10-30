@@ -8,6 +8,7 @@ import ulivo from '../assets/plants/ulivo.webp';
 import lavanda from '../assets/plants/lavanda.webp';
 import rosa from '../assets/plants/rosa.webp';
 import glicine from '../assets/plants/glicine.webp';
+import ciclamino from '../assets/plants/ciclamino.webp';
 import type { Season } from '../lib/dates';
 import type { PlantId } from '../data/plants';
 
@@ -15,4 +16,4 @@ import type { PlantId } from '../data/plants';
 export const GARDEN_BY_SEASON: Record<Season, string> = { primavera, estate, autunno, inverno };
 
 /** Foto della pianta fiorita nel proprio angolo (per le altre piante resta il disegno). */
-export const PLANT_PHOTO: Partial<Record<PlantId, string>> = { girasole, ulivo, lavanda, rosa, glicine };
+export const PLANT_PHOTO: Partial<Record<PlantId, string>> = { girasole, ulivo, lavanda, rosa, glicine, ciclamino };
