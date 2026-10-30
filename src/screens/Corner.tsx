@@ -6,6 +6,7 @@ import { CornerScene } from '../art/Scenes';
 import { PERSONAL_STAGE_AT, STAGES, plantName } from '../data/plants';
 import { myPlant, unlockedDecorations } from '../lib/derive';
 import { seasonOf } from '../lib/dates';
+import { PLANT_PHOTO } from '../art/illustration';
 
 export default function Corner() {
   const s = useApp();
@@ -14,14 +15,38 @@ export default function Corner() {
   const next = PERSONAL_STAGE_AT[p.stage + 1];
   const missing = next !== undefined ? next - s.sessions.length : 0;
   const decos = unlockedDecorations(s);
+  const photo = PLANT_PHOTO[s.plant];
+  const scene = (
+    <CornerScene season={seasonOf()} species={s.plant} stage={p.stage} blooms={p.blooms} decorations={s.decorations} name={s.name} />
+  );
 
   return (
     <Screen>
       <TopBar title="Il tuo angolo" />
       <div className="flex flex-col gap-5">
-        <section className="rounded-card overflow-hidden border-2 border-line bg-white">
-          <CornerScene season={seasonOf()} species={s.plant} stage={p.stage} blooms={p.blooms} decorations={s.decorations} name={s.name} />
-        </section>
+        {photo ? (
+          <section
+            className="relative rounded-card overflow-hidden border-[3px] border-[#CDE5BE]"
+            style={{ boxShadow: '0 8px 0 0 #DBE8D3' }}
+          >
+            <img
+              src={photo}
+              alt={`${plantName(s.plant)} fiorito nella sua aiuola`}
+              className="w-full h-auto block aspect-[3/4] object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/70" aria-hidden />
+            <div className="absolute top-3 inset-x-3 flex justify-between gap-2">
+              <span className="pill bg-white/95 border-2 border-moss text-ink">{s.name ? `L'angolo di ${s.name}` : 'Il mio angolo'}</span>
+            </div>
+            <p className="absolute bottom-3 inset-x-3 text-center">
+              <span className="pill bg-white/95 border-2 border-moss text-leaf-deep !text-body">
+                {p.stage >= 4 ? `Il tuo ${plantName(s.plant).toLowerCase()} è fiorito!` : 'Quando fiorirà, sarà così'}
+              </span>
+            </p>
+          </section>
+        ) : (
+          <section className="rounded-card overflow-hidden border-2 border-line bg-white">{scene}</section>
+        )}
 
         <Card>
           <p className="eyebrow">{plantName(s.plant)}</p>
@@ -38,6 +63,7 @@ export default function Corner() {
         <Card>
           <h2 className="text-h3 font-extrabold">Decora il tuo angolo</h2>
           <p className="text-body text-ink-soft mt-1 mb-4">Si aggiungono con le settimane in cui sei attivo. Tocca per metterle o toglierle.</p>
+          {photo && <div className="rounded-2xl overflow-hidden border-2 border-line mb-4">{scene}</div>}
           <div className="grid grid-cols-2 gap-3">
             {decos.map((d) => {
               const on = s.decorations.includes(d.id);

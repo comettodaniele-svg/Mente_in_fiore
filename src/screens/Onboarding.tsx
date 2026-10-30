@@ -6,6 +6,8 @@ import { MOTIVATIONS } from '../data/challenges';
 import { QUESTIONS, type Answer } from '../data/questionnaire';
 import { PLANTS, type PlantId } from '../data/plants';
 import { Plant } from '../art/Plant';
+import { GARDEN_BY_SEASON } from '../art/illustration';
+import { seasonOf } from '../lib/dates';
 import { Dots, Notice, Screen, TopBar } from '../components/ui';
 import { QuestionnaireFlow } from './Questionnaire';
 import { navigate } from '../router';
@@ -75,10 +77,8 @@ function Welcome({ onNext }: { onNext: () => void }) {
   return (
     <Screen className="justify-between">
       <div className="pt-10 flex flex-col items-center text-center gap-4">
-        <div className="flex items-end justify-center -space-x-6" aria-hidden>
-          <Plant species="lavanda" stage={4} size={110} className="grow-in" />
-          <Plant species="girasole" stage={4} size={150} className="grow-in" />
-          <Plant species="tulipano" stage={4} size={110} className="grow-in" />
+        <div className="w-full rounded-card overflow-hidden border-[3px] border-[#CDE5BE]" style={{ boxShadow: '0 8px 0 0 #DBE8D3' }} aria-hidden>
+          <img src={GARDEN_BY_SEASON[seasonOf()]} alt="" className="w-full h-64 object-cover object-[50%_35%] block" />
         </div>
         <h1 className="text-hero font-extrabold mt-2">Benvenuto in<br />Mente in fiore</h1>
         <p className="text-lead text-ink-soft font-medium max-w-[22rem]">

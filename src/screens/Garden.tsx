@@ -6,15 +6,16 @@ import { UserPlus, Footprints, Check, Play, Sprout, Leaf, MessagesSquare, Clock,
 import { actions, demoMembers, getState, makeCode, useApp } from '../store';
 import { Avatar, Notice, Screen, Steps, TONES, toneFor } from '../components/ui';
 import { navigate, useRoute } from '../router';
-import { GardenScene, type PlotInfo } from '../art/Scenes';
+import type { PlotInfo } from '../art/Scenes';
 import { Plant } from '../art/Plant';
-import { GARDEN_ILLUSTRATION } from '../art/illustration';
+import { GARDEN_BY_SEASON } from '../art/illustration';
 import { STAGES, personalStage, plantName } from '../data/plants';
 import { groupFeed, groupSessionsThisWeek, memberTotalSessions, myPlant, sessionsOn, treeStage } from '../lib/derive';
 import { dayKey, relativeDay, seasonLabel, seasonOf, weekKey } from '../lib/dates';
 import { QUICK_REPLIES, challengeForWeek } from '../data/challenges';
 import { MAX_SESSIONS_PER_DAY, todayPlan } from '../lib/plan';
 import { exById } from '../exercises';
+import { domainLabel } from '../data/domains';
 import { EX_LOOK } from '../exercises/icons';
 import type { ExerciseId } from '../exercises/types';
 
@@ -84,11 +85,11 @@ export default function Garden() {
     const isNext = id === nextEx && !done && !rest;
     const color = done ? '#58CC02' : isNext ? '#46A302' : t.ring;
     const shade = done ? '#398200' : isNext ? '#2A6900' : t.text;
-    const size = big ? 'w-[4.75rem] h-[4.75rem]' : 'w-[4.25rem] h-[4.25rem]';
+    const size = big ? 'w-[4.5rem] h-[4.5rem]' : 'w-16 h-16';
     return (
       <div className="flex flex-col items-center relative">
         {isNext && (
-          <span className="mb-2 pill bg-orange text-ink border-2 border-white" style={{ boxShadow: '0 3px 0 0 #CC7800' }}>
+          <span className="mb-1.5 pill bg-orange text-ink border-2 border-white !text-[0.8125rem] uppercase tracking-wide" style={{ boxShadow: '0 3px 0 0 #CC7800' }}>
             Tocca per iniziare
           </span>
         )}
@@ -102,10 +103,10 @@ export default function Garden() {
         >
           {done ? <Check size={34} strokeWidth={3.4} aria-hidden /> : <look.Icon size={big ? 36 : 30} strokeWidth={2.6} aria-hidden />}
         </button>
-        <span className="mt-2 px-2.5 py-1 bg-white/95 rounded-xl border-2 border-moss text-center max-w-[9rem]">
-          <span className="block text-[0.875rem] font-extrabold leading-tight">{def.name}</span>
-          <span className="block text-[0.75rem] font-bold leading-tight" style={{ color: done ? '#2A6900' : t.text }}>
-            {done ? 'Fatto oggi' : def.trains}
+        <span className="mt-1.5 px-2 py-0.5 bg-white/95 rounded-xl border-2 border-moss text-center max-w-[7.5rem]">
+          <span className="block text-[0.8125rem] font-extrabold leading-tight">{def.name}</span>
+          <span className="block text-[0.6875rem] font-extrabold uppercase tracking-wide leading-tight" style={{ color: done ? '#2A6900' : t.text }}>
+            {done ? 'Fatto oggi ✓' : domainLabel[def.domains[0]]}
           </span>
         </span>
       </div>
@@ -182,78 +183,80 @@ export default function Garden() {
       </section>
 
       <div className="flex flex-col gap-5">
-        {/* LA MAPPA DEL GIARDINO */}
+        {/* LA MAPPA DEL GIARDINO: l'illustrazione della stagione fa da sfondo, sopra i sentieri e le aiuole (come in Stitch) */}
         <section
-          className="rounded-card overflow-hidden bg-[#FAF8F2] border-[3px] border-[#CDE5BE]"
+          className="relative rounded-card overflow-hidden bg-[#FAF8F2] border-[3px] border-[#CDE5BE]"
           style={{ boxShadow: '0 8px 0 0 #DBE8D3' }}
           aria-label="Mappa del giardino"
         >
-          <div className="relative">
-            {GARDEN_ILLUSTRATION ? (
-              <img src={GARDEN_ILLUSTRATION} alt={sceneLabel} className="w-full h-auto block" />
-            ) : (
-              <GardenScene season={season} treeStage={tStage} plots={meplot ? [meplot, ...plots] : plots} label={sceneLabel} />
-            )}
-            <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
-              <span className="pill bg-white/95 border-2 border-moss text-ink !text-[0.875rem]">
-                <Sprout size={18} className="text-leaf" aria-hidden /> I sentieri
-              </span>
-              <span className="pill bg-white/95 border-2 border-moss text-ink-soft !text-[0.875rem]">
-                <SunIcon size={18} className="text-orange" aria-hidden /> Fase {STAGES[tStage].toLowerCase()}
-              </span>
-            </div>
-          </div>
+          <img src={GARDEN_BY_SEASON[season]} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-[50%_30%]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/75" aria-hidden />
+          <p className="sr-only">{sceneLabel}</p>
 
-          {/* Sentiero con le tre attività di oggi */}
-          <div className="relative px-4 pt-5 pb-3">
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 360 300" preserveAspectRatio="none" aria-hidden>
-              <path d="M 70 70 Q 130 110 180 160" fill="none" stroke="#68BB35" strokeWidth="4" strokeDasharray="6 6" opacity="0.75" />
-              <path d="M 290 70 Q 230 110 180 160" fill="none" stroke="#46A302" strokeWidth="4" strokeDasharray="6 6" opacity="0.75" />
-            </svg>
-            <div className="relative flex items-start justify-between">
-              <Node id={plan[0]} />
-              <Node id={plan[2]} />
-            </div>
-            <div className="relative flex justify-center -mt-2">
-              <Node id={plan[1]} big />
-            </div>
-          </div>
-
-          {/* Le aiuole */}
-          <div className="px-3 pb-5">
-            <p className="text-center mb-3">
-              <span className="pill bg-sun-tint border-2 border-sun-edge text-[#5C491B] !text-[0.8125rem] uppercase tracking-wider">
-                {group ? 'Le aiuole dei compagni' : 'La tua aiuola'}
+          <div className="relative flex flex-col justify-between gap-2 min-h-[32rem] p-3">
+            {/* Etichette in alto */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="pill bg-white/95 border-2 border-moss text-ink !text-[0.8125rem] !whitespace-normal leading-tight">
+                <Sprout size={18} className="text-leaf shrink-0" aria-hidden /> I sentieri dell'albero
               </span>
-            </p>
-            <div className="flex items-end justify-around gap-1">
-              {row.map((p) => {
-                const me = 'me' in p && p.me;
-                const t = me ? null : TONES[p.tone % TONES.length];
-                return (
-                  <button
-                    key={p.name}
-                    type="button"
-                    onClick={() => choose({ kind: 'plot', name: p.name, me: !!me })}
-                    aria-label={me ? 'Il tuo angolo' : `Aiuola di ${p.name}: ${plantName(p.species).toLowerCase()}`}
-                    className="flex flex-col items-center gap-1 min-w-[3.5rem]"
-                  >
-                    <span
-                      className={`${me ? 'w-[4.25rem] h-[4.25rem]' : 'w-14 h-14'} rounded-full flex items-end justify-center overflow-hidden border-[3px]`}
-                      style={{
-                        background: me ? '#EEFAE6' : t!.bg,
-                        borderColor: me ? '#46A302' : t!.ring,
-                        boxShadow: `0 4px 0 0 ${me ? '#357C01' : t!.edge}`,
-                      }}
+              <span className="pill bg-white/95 border-2 border-moss text-ink-soft !text-[0.8125rem] !whitespace-normal leading-tight">
+                <SunIcon size={18} className="text-orange shrink-0" aria-hidden /> Fase {STAGES[tStage].toLowerCase()}
+              </span>
+            </div>
+
+            {/* I tre nodi delle attività di oggi, sopra la chioma del melograno */}
+            <div className="relative px-1 pt-2">
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 360 300" preserveAspectRatio="none" aria-hidden>
+                <path d="M 70 60 Q 130 110 180 170" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" opacity="0.7" />
+                <path d="M 290 60 Q 230 110 180 170" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" opacity="0.7" />
+                <path d="M 70 60 Q 130 110 180 170" fill="none" stroke="#46A302" strokeWidth="4" strokeDasharray="6 6" />
+                <path d="M 290 60 Q 230 110 180 170" fill="none" stroke="#46A302" strokeWidth="4" strokeDasharray="6 6" />
+              </svg>
+              <div className="relative flex items-start justify-between">
+                <Node id={plan[0]} />
+                <Node id={plan[2]} />
+              </div>
+              <div className="relative flex justify-center mt-1">
+                <Node id={plan[1]} big />
+              </div>
+            </div>
+
+            {/* Le aiuole, davanti all'albero */}
+            <div>
+              <p className="text-center mb-2">
+                <span className="pill bg-sun-tint/95 border-2 border-sun-edge text-[#5C491B] !text-[0.8125rem] uppercase tracking-wider">
+                  {group ? 'Le aiuole dei compagni' : 'La tua aiuola'}
+                </span>
+              </p>
+              <div className="flex items-end justify-around gap-1">
+                {row.map((p) => {
+                  const me = 'me' in p && p.me;
+                  const t = me ? null : TONES[p.tone % TONES.length];
+                  return (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => choose({ kind: 'plot', name: p.name, me: !!me })}
+                      aria-label={me ? 'Il tuo angolo' : `Aiuola di ${p.name}: ${plantName(p.species).toLowerCase()}`}
+                      className="flex flex-col items-center gap-1 min-w-[3.5rem]"
                     >
-                      <Plant species={p.species} stage={Math.max(2, p.stage)} blooms={p.blooms} size={me ? 52 : 44} />
-                    </span>
-                    <span className={`text-[0.8125rem] font-extrabold leading-tight ${me ? 'bg-white px-1.5 rounded-md border-2 border-moss' : 'text-ink-soft'}`}>
-                      {me ? 'Il tuo angolo' : p.name}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span
+                        className={`${me ? 'w-[4.25rem] h-[4.25rem]' : 'w-14 h-14'} rounded-full flex items-end justify-center overflow-hidden border-[3px]`}
+                        style={{
+                          background: me ? '#EEFAE6' : t!.bg,
+                          borderColor: me ? '#46A302' : t!.ring,
+                          boxShadow: `0 4px 0 0 ${me ? '#357C01' : t!.edge}`,
+                        }}
+                      >
+                        <Plant species={p.species} stage={Math.max(2, p.stage)} blooms={p.blooms} size={me ? 52 : 44} />
+                      </span>
+                      <span className={`text-[0.8125rem] font-extrabold leading-tight px-1.5 rounded-md ${me ? 'bg-white border-2 border-moss' : 'bg-white/85 text-ink'}`}>
+                        {me ? 'Il tuo angolo' : p.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
