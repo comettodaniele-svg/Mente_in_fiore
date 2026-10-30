@@ -9,11 +9,13 @@ import lavanda from '../assets/plants/lavanda.webp';
 import rosa from '../assets/plants/rosa.webp';
 import glicine from '../assets/plants/glicine.webp';
 import ciclamino from '../assets/plants/ciclamino.webp';
+import tulipano from '../assets/plants/tulipano.webp';
+import limone from '../assets/plants/limone.webp';
 import type { Season } from '../lib/dates';
 import type { PlantId } from '../data/plants';
 
 /** Il giardino della stagione in corso. In autunno il melograno ha i frutti maturi. */
 export const GARDEN_BY_SEASON: Record<Season, string> = { primavera, estate, autunno, inverno };
 
-/** Foto della pianta fiorita nel proprio angolo (per le altre piante resta il disegno). */
-export const PLANT_PHOTO: Partial<Record<PlantId, string>> = { girasole, ulivo, lavanda, rosa, glicine, ciclamino };
+/** Foto della pianta fiorita nel proprio angolo. */
+export const PLANT_PHOTO: Record<PlantId, string> = { girasole, ulivo, lavanda, rosa, glicine, ciclamino, tulipano, limone };
