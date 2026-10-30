@@ -400,8 +400,150 @@ function melograno(stage: number, blooms: number) {
   );
 }
 
+// ---------- Fiori e ortaggi aggiunti ----------
+
+function Daisy({ x, y, r }: { x: number; y: number; r: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      {Array.from({ length: 14 }, (_, i) => i * (360 / 14)).map((a) => (
+        <ellipse key={a} cx={0} cy={-r * 0.62} rx={r * 0.2} ry={r * 0.48} fill="#FFFFFF" stroke="#E2E6EA" strokeWidth={0.5} transform={`rotate(${a})`} />
+      ))}
+      <circle r={r * 0.34} fill="#F5B800" />
+      <circle r={r * 0.2} fill="#E09A00" />
+    </g>
+  );
+}
+
+const DAISY_SPOTS: [number, number, number][] = [[60, 56, 15], [36, 72, 13], [84, 70, 13], [46, 42, 12], [74, 40, 12], [26, 94, 11], [94, 92, 11], [60, 84, 12]];
+
+function margherita(stage: number, blooms: number) {
+  const n = stage === 4 ? 4 + Math.min(4, blooms) : 0;
+  return (
+    <g>
+      <ellipse cx={60} cy={112} rx={36} ry={20} fill="#4F8A3A" />
+      {[[34, 110, -50], [44, 100, -25], [56, 96, -5], [68, 98, 15], [80, 106, 40], [88, 116, 65], [30, 120, -75], [62, 108, 0]].map(([x, y, a]) => (
+        <Leaf key={`${x}-${y}`} x={x} y={y} a={a} L={16} W={5.5} fill="#5E9B45" vein="#3F6E2C" />
+      ))}
+      {stage >= 3 && DAISY_SPOTS.slice(0, stage === 3 ? 5 : n).map(([x, y]) => (
+        <path key={`s${x}-${y}`} d={`M${x} ${y} C${x} ${y + 14} ${60 + (x - 60) * 0.5} ${y + 24} ${60 + (x - 60) * 0.4} 104`} stroke="#4F8A3A" strokeWidth={2.2} fill="none" />
+      ))}
+      {stage === 3 && DAISY_SPOTS.slice(0, 5).map(([x, y]) => (
+        <g key={`b${x}-${y}`}>
+          <circle cx={x} cy={y} r={4.2} fill="#7FB04F" />
+          <circle cx={x} cy={y - 1.5} r={2.4} fill="#FFFFFF" />
+        </g>
+      ))}
+      {stage === 4 && DAISY_SPOTS.slice(0, n).map(([x, y, r]) => <Daisy key={`d${x}-${y}`} x={x} y={y} r={r} />)}
+    </g>
+  );
+}
+
+function Aster({ x, y, r, color, dark }: { x: number; y: number; r: number; color: string; dark: string }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      {Array.from({ length: 16 }, (_, i) => i * 22.5).map((a) => (
+        <ellipse key={`o${a}`} cx={0} cy={-r * 0.6} rx={r * 0.17} ry={r * 0.45} fill={color} transform={`rotate(${a})`} />
+      ))}
+      {Array.from({ length: 12 }, (_, i) => i * 30 + 15).map((a) => (
+        <ellipse key={`i${a}`} cx={0} cy={-r * 0.36} rx={r * 0.15} ry={r * 0.32} fill={dark} transform={`rotate(${a})`} />
+      ))}
+      <circle r={r * 0.2} fill="#F4C430" />
+    </g>
+  );
+}
+
+const ASTER_SPOTS: [number, number, number, string, string][] = [
+  [60, 60, 12, '#7B4FD6', '#5B33B5'],
+  [36, 74, 10.5, '#E06A9C', '#C24B7E'],
+  [84, 72, 10.5, '#FFFFFF', '#E3E0F5'],
+  [48, 48, 9, '#E06A9C', '#C24B7E'],
+  [74, 46, 9, '#7B4FD6', '#5B33B5'],
+  [30, 94, 9, '#7B4FD6', '#5B33B5'],
+  [90, 92, 9, '#E06A9C', '#C24B7E'],
+  [60, 86, 9.5, '#FFFFFF', '#E3E0F5'],
+];
+
+function astro(stage: number, blooms: number) {
+  const n = stage === 4 ? 4 + Math.min(4, blooms) : 0;
+  return (
+    <g>
+      <ellipse cx={60} cy={110} rx={38} ry={22} fill="#3E7A35" />
+      {[[30, 108, -55], [42, 96, -30], [56, 92, -8], [70, 94, 18], [84, 104, 45], [92, 116, 70], [26, 120, -80]].map(([x, y, a]) => (
+        <Leaf key={`${x}-${y}`} x={x} y={y} a={a} L={18} W={7} fill="#4E8C40" vein="#336628" />
+      ))}
+      {stage === 3 && ASTER_SPOTS.slice(0, 5).map(([x, y, , c]) => (
+        <g key={`b${x}-${y}`}>
+          <circle cx={x} cy={y + 4} r={5} fill="#5E9B4F" />
+          <ellipse cx={x} cy={y + 1} rx={3} ry={4} fill={c} stroke="#5B33B5" strokeWidth={0.6} />
+        </g>
+      ))}
+      {stage === 4 && ASTER_SPOTS.slice(0, n).map(([x, y, r, c, d]) => <Aster key={`a${x}-${y}`} x={x} y={y} r={r} color={c} dark={d} />)}
+    </g>
+  );
+}
+
+const TOMATO_SPOTS: [number, number][] = [[46, 70], [74, 66], [56, 90], [82, 92], [38, 98], [66, 52], [50, 52], [88, 74], [62, 106], [34, 82]];
+
+function pomodoro(stage: number, blooms: number) {
+  const n = stage === 4 ? 5 + Math.min(5, blooms) : 0;
+  return (
+    <g>
+      {/* paletto di sostegno */}
+      <rect x={58} y={32} width={4} height={98} rx={1.5} fill="#8B5E34" />
+      <path d="M60 128 C56 110 64 92 58 74 C54 62 62 50 60 40" stroke="#4E8A3A" strokeWidth={4} fill="none" strokeLinecap="round" />
+      {[[58, 108, -70], [62, 100, 70], [58, 88, -60], [62, 78, 65], [58, 66, -55], [62, 56, 60], [60, 44, -15]].map(([x, y, a]) => (
+        <g key={`${x}-${y}`}>
+          <Leaf x={x} y={y} a={a} L={20} W={7.5} fill="#4C8B3B" vein="#2F5F24" />
+          <Leaf x={x} y={y} a={a + (a < 0 ? 30 : -30)} L={13} W={5} fill="#5C9C47" />
+        </g>
+      ))}
+      {stage === 3 && TOMATO_SPOTS.slice(0, 6).map(([x, y]) => (
+        <g key={`f${x}-${y}`} transform={`translate(${x} ${y})`}>
+          {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx={0} cy={-2.3} rx={1.2} ry={2.3} fill="#F7D31C" transform={`rotate(${a})`} />)}
+          <circle r={1} fill="#C99A00" />
+        </g>
+      ))}
+      {stage === 4 && TOMATO_SPOTS.slice(0, n).map(([x, y], i) => (
+        <g key={`t${x}-${y}`} transform={`translate(${x} ${y})`}>
+          <circle r={6.4} fill={i % 4 === 3 ? '#F08A24' : '#D9312B'} />
+          <ellipse cx={-2} cy={-2.2} rx={1.8} ry={1.1} fill="#FFFFFF" opacity={0.45} />
+          {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx={0} cy={-6.6} rx={0.9} ry={2.2} fill="#3F7A2F" transform={`rotate(${a} 0 -5)`} />)}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+const EGGPLANT_SPOTS: [number, number, number][] = [[42, 94, 18], [78, 92, -18], [58, 104, 6], [30, 108, 26], [90, 106, -24], [66, 82, -10], [50, 80, 14]];
+
+function melanzana(stage: number, blooms: number) {
+  const n = stage === 4 ? 3 + Math.min(4, blooms) : 0;
+  return (
+    <g>
+      <path d="M60 128 C58 112 62 96 60 70" stroke="#6B4A7A" strokeWidth={4} fill="none" strokeLinecap="round" />
+      <path d="M60 104 C50 98 42 92 36 82 M60 96 C70 90 78 84 84 74" stroke="#6B4A7A" strokeWidth={3} fill="none" strokeLinecap="round" />
+      {[[36, 82, -60], [84, 74, 60], [60, 70, 0], [46, 70, -30], [74, 62, 30], [30, 96, -80], [90, 90, 80], [60, 56, -5]].map(([x, y, a]) => (
+        <Leaf key={`${x}-${y}`} x={x} y={y} a={a} L={26} W={13} fill="#7DA35B" vein="#557A3A" />
+      ))}
+      {stage === 3 && [[48, 78], [72, 74], [60, 92], [40, 96], [80, 92]].map(([x, y]) => (
+        <g key={`f${x}-${y}`} transform={`translate(${x} ${y})`}>
+          {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx={0} cy={-3} rx={2} ry={3.2} fill="#9C6FD6" transform={`rotate(${a})`} />)}
+          <circle r={1.4} fill="#F7D31C" />
+        </g>
+      ))}
+      {stage === 4 && EGGPLANT_SPOTS.slice(0, n).map(([x, y, a]) => (
+        <g key={`e${x}-${y}`} transform={`translate(${x} ${y}) rotate(${a})`}>
+          <path d="M0 -5 C6 -5 7 4 6 12 C5 20 -5 20 -6 12 C-7 4 -6 -5 0 -5 Z" fill="#3D1F4E" />
+          <ellipse cx={-2.4} cy={4} rx={1.4} ry={4} fill="#7B4B93" opacity={0.7} />
+          <path d="M-5 -4 L0 -9 L5 -4 L2 -2 L0 -5 L-2 -2 Z" fill="#4E7A35" />
+        </g>
+      ))}
+    </g>
+  );
+}
+
 const DRAW: Record<Species, (stage: number, blooms: number) => ReactNode> = {
-  rosa, girasole, lavanda, tulipano, ciclamino, ulivo, limone, glicine, melograno,
+  rosa, girasole, lavanda, tulipano, ciclamino, ulivo, limone, glicine, melograno, margherita, astro, pomodoro, melanzana,
 };
 
 /** Solo le forme, da inserire in altre scene (coordinate 120 x 140). */

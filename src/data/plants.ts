@@ -6,7 +6,11 @@ export type PlantId =
   | 'limone'
   | 'glicine'
   | 'tulipano'
-  | 'ciclamino';
+  | 'ciclamino'
+  | 'margherita'
+  | 'astro'
+  | 'pomodoro'
+  | 'melanzana';
 
 export type Species = PlantId | 'melograno';
 
@@ -26,6 +30,10 @@ export const PLANTS: PlantInfo[] = [
   { id: 'glicine', name: 'Glicine', note: 'Grappoli che scendono' },
   { id: 'tulipano', name: 'Tulipano', note: 'Elegante e semplice' },
   { id: 'ciclamino', name: 'Ciclamino', note: 'Fiorisce anche d\'inverno' },
+  { id: 'margherita', name: 'Margherita', note: 'Semplice e allegra' },
+  { id: 'astro', name: 'Astro della Cina', note: 'Tanti colori in un\'aiuola' },
+  { id: 'pomodoro', name: 'Pomodoro', note: 'Per chi ama l\'orto' },
+  { id: 'melanzana', name: 'Melanzana', note: 'Fiori viola, frutti lucidi' },
 ];
 
 export const plantName = (id: Species) =>

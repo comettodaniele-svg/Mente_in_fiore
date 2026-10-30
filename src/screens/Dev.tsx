@@ -5,6 +5,8 @@ import { Card, Notice, Screen, TopBar } from '../components/ui';
 import { navigate } from '../router';
 import { EXERCISES, exById } from '../exercises';
 import { domainLabel } from '../data/domains';
+import { PLANTS, STAGES, type Species } from '../data/plants';
+import { Plant } from '../art/Plant';
 import { levelOf } from '../lib/plan';
 import { clearProgress, resetLevels, seedDemoData } from '../lib/devtools';
 import { relativeDay, dayKey } from '../lib/dates';
@@ -71,6 +73,21 @@ export default function Dev() {
             );
           })}
         </section>
+
+        <Card>
+          <h2 className="text-h3 font-extrabold mb-1">Galleria delle piante</h2>
+          <p className="text-meta text-ink-soft mb-3">Tutte le piante nei 5 stadi: {STAGES.join(', ').toLowerCase()}.</p>
+          <div className="flex flex-col gap-3">
+            {[...PLANTS.map((p) => ({ id: p.id as Species, name: p.name })), { id: 'melograno' as Species, name: 'Melograno (albero comune)' }].map((p) => (
+              <div key={p.id} className="rounded-2xl bg-canvas p-2" data-plant={p.id}>
+                <p className="text-meta font-bold px-1">{p.name}</p>
+                <div className="grid grid-cols-5 gap-1">
+                  {[0, 1, 2, 3, 4].map((st) => <Plant key={st} species={p.id} stage={st} blooms={st === 4 ? 4 : 0} size={58} />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
 
         <Card>
           <h2 className="text-h3 font-extrabold mb-2">Ultime prove</h2>

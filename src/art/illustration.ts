@@ -11,6 +11,10 @@ import glicine from '../assets/plants/glicine.webp';
 import ciclamino from '../assets/plants/ciclamino.webp';
 import tulipano from '../assets/plants/tulipano.webp';
 import limone from '../assets/plants/limone.webp';
+import margherita from '../assets/plants/margherita.webp';
+import astro from '../assets/plants/astro.webp';
+import pomodoro from '../assets/plants/pomodoro.webp';
+import melanzana from '../assets/plants/melanzana.webp';
 import type { Season } from '../lib/dates';
 import type { PlantId } from '../data/plants';
 
@@ -18,4 +22,6 @@ import type { PlantId } from '../data/plants';
 export const GARDEN_BY_SEASON: Record<Season, string> = { primavera, estate, autunno, inverno };
 
 /** Foto della pianta fiorita nel proprio angolo. */
-export const PLANT_PHOTO: Record<PlantId, string> = { girasole, ulivo, lavanda, rosa, glicine, ciclamino, tulipano, limone };
+export const PLANT_PHOTO: Record<PlantId, string> = {
+  girasole, ulivo, lavanda, rosa, glicine, ciclamino, tulipano, limone, margherita, astro, pomodoro, melanzana,
+};
